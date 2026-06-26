@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>.XENO</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #000;
+            color: #fff;
+            font-family: 'VT323', monospace;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+        
+        /* Scanline effect */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(255,255,255,0.03) 0px,
+                rgba(255,255,255,0.03) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+            pointer-events: none;
+            z-index: 100;
+        }
+        
+        /* Glitch animation */
+        @keyframes glitch {
+            0% { transform: translate(0); }
+            20% { transform: translate(-2px, 2px); }
+            40% { transform: translate(-2px, -2px); }
+            60% { transform: translate(2px, 2px); }
+            80% { transform: translate(2px, -2px); }
+            100% { transform: translate(0); }
+        }
+        
+        @keyframes flicker {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+            75% { opacity: 0.9; }
+        }
+        
+        .header {
+            text-align: center;
+            padding: 40px 20px;
+            border-bottom: 1px solid #333;
+            position: relative;
+        }
+        
+        .logo {
+            font-size: 80px;
+            letter-spacing: 20px;
+            animation: flicker 3s infinite;
+            text-shadow: 
+                2px 0 #fff, 
+                -2px 0 #fff,
+                0 2px #fff,
+                0 -2px #fff;
+        }
+        
+        .logo.glitch {
+            animation: glitch 0.3s infinite;
+        }
+        
+        .subtext {
+            font-size: 14px;
+            color: #666;
+            margin-top: 10px;
+            letter-spacing: 5px;
+        }
+        
+        .container {
+            flex: 1;
+            display: flex;
+            padding: 40px;
+            gap: 40px;
+        }
+        
+        .left-panel, .right-panel {
+            flex: 1;
+            border: 1px solid #333;
+            padding: 30px;
+            background: rgba(255,255,255,0.02);
+        }
+        
+        .panel-title {
+            font-size: 24px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #fff;
+            padding-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+        
+        .file-list {
+            font-size: 16px;
+            line-height: 2;
+            color: #888;
+        }
+        
+        .file-list .encrypted {
+            color: #fff;
+            text-decoration: line-through;
+        }
+        
+        .file-list .encrypting {
+            color: #fff;
+            animation: flicker 0.5s infinite;
+        }
+        
+        .stats {
+            font-size: 18px;
+            line-height: 2.5;
+        }
+        
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px dotted #333;
+        }
+        
+        .stat-label {
+            color: #666;
+        }
+        
+        .stat-value {
+            color: #fff;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            border: 1px solid #fff;
+            margin: 30px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: #fff;
+            width: 0%;
+            animation: fillProgress 10s ease-in-out forwards;
+        }
+        
+        @keyframes fillProgress {
+            to { width: 100%; }
+        }
+        
+        .warning {
+            text-align: center;
+            padding: 30px;
+            border-top: 1px solid #333;
+            font-size: 18px;
+            color: #666;
+        }
+        
+        .warning span {
+            color: #fff;
+            animation: flicker 1s infinite;
+        }
+        
+        .bitcoin-address {
+            background: #111;
+            border: 1px solid #333;
+            padding: 20px;
+            margin: 20px 0;
+            font-size: 14px;
+            word-break: break-all;
+            text-align: center;
+            letter-spacing: 2px;
+        }
+        
+        .timer {
+            font-size: 48px;
+            text-align: center;
+            margin: 20px 0;
+            letter-spacing: 10px;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 20px;
+            border-top: 1px solid #333;
+            font-size: 12px;
+            color: #444;
+            letter-spacing: 2px;
+        }
+        
+        /* Matrix rain effect */
+        .matrix-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+            opacity: 0.1;
+        }
+        
+        .matrix-char {
+            position: absolute;
+            color: #fff;
+            font-size: 14px;
+            animation: fall linear infinite;
+        }
+        
+        @keyframes fall {
+            to { transform: translateY(100vh); }
+        }
+        
+        .btn {
+            background: transparent;
+            border: 1px solid #fff;
+            color: #fff;
+            padding: 15px 40px;
+            font-family: 'VT323', monospace;
+            font-size: 18px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            transition: all 0.3s;
+            display: block;
+            margin: 20px auto;
+        }
+        
+        .btn:hover {
+            background: #fff;
+            color: #000;
+        }
+        
+        .skull-ascii {
+            text-align: center;
+            font-size: 12px;
+            line-height: 1.2;
+            color: #fff;
+            margin: 20px 0;
+            white-space: pre;
+        }
+    </style>
+</head>
+<body>
+    <div class="matrix-bg" id="matrix"></div>
+    
+    <div class="header">
+        <div class="logo" id="logo">.XENO</div>
+        <div class="subtext">FILE SYSTEM ENCRYPTION PROTOCOL</div>
+    </div>
+    
+    <div class="container">
+        <div class="left-panel">
+            <div class="panel-title">/// TARGETED_FILES</div>
+            <div class="file-list" id="fileList">
+                <div class="encrypting">> encrypting documents...</div>
+                <div class="encrypted">[LOCKED] personal_photos.zip</div>
+                <div class="encrypted">[LOCKED] financial_records.xlsx</div>
+                <div class="encrypted">[LOCKED] project_files/</div>
+                <div class="encrypted">[LOCKED] database_backup.sql</div>
+                <div class="encrypting">> encrypting videos...</div>
+                <div class="encrypted">[LOCKED] family_videos/</div>
+                <div class="encrypted">[LOCKED] work_documents/</div>
+                <div class="encrypting">> encrypting system files...</div>
+            </div>
+            
+            <div class="progress-bar">
+                <div class="progress-fill"></div>
+            </div>
+            
+            <div class="stats">
+                <div class="stat-row">
+                    <span class="stat-label">FILES ENCRYPTED:</span>
+                    <span class="stat-value" id="fileCount">1,247</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">ENCRYPTION:</span>
+                    <span class="stat-value">AES-256 + RSA-4096</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">UNIQUE ID:</span>
+                    <span class="stat-value" id="uniqueId">X7F9-A2K4-M8P1</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="right-panel">
+            <div class="panel-title">/// RECOVERY_PROTOCOL</div>
+            
+            <div class="skull-ascii">
+     ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+     ██░██░██░██░██░██░██░██░██░██░██░██░
+     ██░██░██░██░██░██░██░██░██░██░██░██░
+     ██░▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀██░
+     ██░                            ░██░
+     ██░   YOUR FILES ARE ENCRYPTED  ░██░
+     ██░                            ░██░
+     ██░▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄██░
+     ██░██░██░██░██░██░██░██░██░██░██░██░
+     ██░██░██░██░██░██░██░██░██░██░██░██░
+            </div>
+            
+            <p style="margin-bottom: 20px; line-height: 1.8; color: #888;">
+                All your important files have been encrypted with military-grade encryption.<br><br>
+                To recover your data, you must purchase the decryption key.<br>
+                Attempting to recover files without the key will result in permanent data loss.
+            </p>
+            
+            <div class="panel-title" style="font-size: 18px;">TIME REMAINING</div>
+            <div class="timer" id="timer">47:59:59</div>
+            
+            <div class="panel-title" style="font-size: 18px;">PAYMENT REQUIRED</div>
+            <div class="bitcoin-address">
+                SEND 0.5 BTC TO:<br>
+                bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh
+            </div>
+            
+            <button class="btn" onclick="alert('ypur files should be unecrypted soon')">
+                VERIFY PAYMENT
+            </button>
+        </div>
+    </div>
+    
+    <div class="warning">
+        <span>⚠ WARNING:</span> Do not attempt to remove this software or restart your computer. 
+        Your files will be permanently corrupted.
+    </div>
+    
+    <div class="footer">
+        .XENO RANSOMWARE v2.0.24 // APHEX TWIN INSPIRED SIMULATION // NO ACTUAL FILES HARMED
+    </div>
+
+    <script>
+        // Matrix rain effect
+        const matrix = document.getElementById('matrix');
+        const chars = '01アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン';
+        
+        function createMatrixChar() {
+            const char = document.createElement('div');
+            char.className = 'matrix-char';
+            char.textContent = chars[Math.floor(Math.random() * chars.length)];
+            char.style.left = Math.random() * 100 + '%';
+            char.style.animationDuration = (Math.random() * 3 + 2) + 's';
+            char.style.animationDelay = Math.random() * 2 + 's';
+            matrix.appendChild(char);
+            
+            setTimeout(() => char.remove(), 5000);
+        }
+        
+        setInterval(createMatrixChar, 100);
+        
+        // Glitch effect on logo
+        const logo = document.getElementById('logo');
+        setInterval(() => {
+            logo.classList.add('glitch');
+            setTimeout(() => logo.classList.remove('glitch'), 200);
+        }, 3000);
+        
+        // Countdown timer
+        let hours = 47, minutes = 59, seconds = 59;
+        setInterval(() => {
+            seconds--;
+            if (seconds < 0) {
+                seconds = 59;
+                minutes--;
+            }
+            if (minutes < 0) {
+                minutes = 59;
+                hours--;
+            }
+            document.getElementById('timer').textContent = 
+                `${hours.toString().padStart(2,'0')}:${minutes.toString().padStart(2,'0')}:${seconds.toString().padStart(2,'0')}`;
+        }, 1000);
+        
+        // Random file count updates
+        setInterval(() => {
+            const count = Math.floor(Math.random() * 500) + 1000;
+            document.getElementById('fileCount').textContent = count.toLocaleString();
+        }, 5000);
+        
+        // Generate random ID
+        const randomId = () => {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let id = '';
+            for (let i = 0; i < 3; i++) {
+                for (let j = 0; j < 4; j++) {
+                    id += chars[Math.floor(Math.random() * chars.length)];
+                }
+                if (i < 2) id += '-';
+            }
+            return id;
+        };
+        document.getElementById('uniqueId').textContent = randomId();
+    </script>
+</body>
+</html>
